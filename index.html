@@ -292,6 +292,228 @@
     background: var(--accent); cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
   .slider-value { display: inline-block; float: right; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+
+  /* IQ Card Styles */
+  .iq-card {
+    position: relative;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+    backdrop-filter: blur(16px);
+    border: 2px solid var(--accent);
+    border-radius: 24px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.2);
+    animation: pulse-border 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.2); }
+    50% { box-shadow: 0 0 60px rgba(251, 191, 36, 0.4); }
+  }
+
+  .modal-close {
+    padding: 0 !important;
+    width: auto !important;
+  }
+
+  /* АчивкиGrid */
+  #achievementsList .ach-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+  }
+
+  #achievementsList .ach-item:hover {
+    background: rgba(255,255,255,0.12);
+    transform: scale(1.05);
+  }
+
+  #achievementsList .ach-item.locked {
+    opacity: 0.3;
+    font-size: 20px;
+  }
+
+  #achievementsList .ach-item.unlocked {
+    border-color: var(--accent);
+    background: rgba(251, 191, 36, 0.1);
+  }
+
+  #achievementsList .ach-name {
+    font-size: 10px;
+    margin-top: 4px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  /* Батл режим */
+  .battle-score {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 16px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    margin: 12px 0;
+    gap: 12px;
+  }
+
+  .battle-player {
+    text-align: center;
+    flex: 1;
+  }
+
+  .battle-player-name {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .battle-progress {
+    width: 100%;
+    height: 12px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .battle-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+
+  #playerProfile {
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ========== МОБИЛЬНЫЙ АДАПТИВ ========== */
+  @media (max-width: 480px) {
+    body { padding: 8px; }
+    .card { max-width: 100%; padding: 16px; }
+    h1 { font-size: 1.5rem; }
+    .subtitle { font-size: 0.85rem; }
+    .modes { flex-direction: column; gap: 8px; }
+    .mode-btn { padding: 12px 8px; font-size: 0.9rem; }
+    .levels { gap: 6px; }
+    .level-btn { min-width: 70px; padding: 8px 4px; font-size: 0.8rem; }
+    .input-row { flex-direction: column; gap: 8px; }
+    #guess { padding: 12px; font-size: 1.1rem; }
+    .btn { padding: 12px 18px; font-size: 0.95rem; width: 100%; }
+    .hint { font-size: 1.1rem; }
+    .stats { font-size: 0.85rem; gap: 8px; }
+    .top-bar { top: 8px; right: 8px; gap: 4px; }
+    .icon-btn { width: 34px; height: 34px; font-size: 1rem; }
+    .name-row { flex-direction: column; }
+    #playerName { flex: 1; width: 100%; }
+    .record { font-size: 0.8rem; }
+    .timer-bar { height: 6px; }
+    .arrow { font-size: 1.8rem; }
+  }
+
+  @media (max-width: 600px) {
+    .card { max-width: 100%; }
+    .levels { grid-template-columns: 1fr; }
+  }
+
+  /* ========== УЛУЧШЕННЫЙ ДИЗАЙН ========== */
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #f97316);
+    font-weight: 700;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.2);
+    transition: left 0.3s;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-start {
+    padding: 16px 32px;
+    font-size: 1.2rem;
+    width: 100%;
+    margin: 20px 0;
+    background: linear-gradient(135deg, #fbbf24, #f97316);
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
+    animation: pulse-btn 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-btn {
+    0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4); }
+    50% { transform: scale(1.02); box-shadow: 0 12px 32px rgba(251, 191, 36, 0.6); }
+  }
+
+  .btn-start:hover {
+    animation: none;
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(251, 191, 36, 0.6);
+  }
+
+  /* Улучшение уровней кнопок */
+  .level-btn {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 2px solid var(--card-border);
+  }
+
+  .level-btn.active {
+    background: linear-gradient(135deg, var(--accent), #f97316);
+    border-color: transparent;
+    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3);
+  }
+
+  .level-btn:hover {
+    border-color: var(--accent);
+  }
+
+  /* Режимы кнопки с градиентом */
+  .mode-btn.active {
+    background: linear-gradient(135deg, var(--accent), #f97316);
+    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3);
+  }
+
+  /* Улучшенный вход */
+  #guess {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+  }
+
+  /* Профиль - улучшение */
+  #playerProfile {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.1);
+  }
+
+  #playerXPBar {
+    background: linear-gradient(90deg, #fbbf24, #f97316);
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+  }
 </style>
 </head>
 <body>
@@ -309,6 +531,7 @@
       <button class="mode-btn active" data-mode="player">🧑 Я угадываю</button>
       <button class="mode-btn" data-mode="cpu">🤖 Компьютер</button>
       <button class="mode-btn" data-mode="challenge">🔗 Вызов другу</button>
+      <button class="mode-btn" data-mode="battle">⚔️ Батл</button>
     </div>
 
     <!-- РЕЖИМ: игрок угадывает -->
@@ -331,10 +554,11 @@
       <!-- Стандартные уровни -->
       <div id="classicLevelContainer">
         <div class="levels" id="levels">
-        <button class="level-btn" data-min="1" data-max="50" data-attempts="10" data-time="40" data-name="Лёгкий">Лёгкий<small>1–50 · 40с</small></button>
-        <button class="level-btn active" data-min="1" data-max="100" data-attempts="7" data-time="30" data-name="Средний">Средний<small>1–100 · 30с</small></button>
-        <button class="level-btn" data-min="1" data-max="1000" data-attempts="10" data-time="25" data-name="Сложный">Сложный<small>1–1000 · 25с</small></button>
+        <button class="level-btn" data-min="1" data-max="50" data-attempts="10" data-time="40" data-name="Лёгкий">Лёгкий<small>1–50 · 10п</small></button>
+        <button class="level-btn active" data-min="1" data-max="100" data-attempts="7" data-time="30" data-name="Средний">Средний<small>1–100 · 7п</small></button>
+        <button class="level-btn" data-min="1" data-max="1000" data-attempts="10" data-time="25" data-name="Сложный">Сложный<small>1–1000 · 10п</small></button>
       </div>
+      <button class="btn btn-start" id="startClassicBtn">🎮 НАЧАТЬ ИГРУ</button>
       </div>
 
       <!-- Режим "Только попытки" -->
@@ -449,6 +673,68 @@
     </div>
   </div>
 
+  <!-- Профиль игрока (вставить в карточку, после modes) -->
+  <div id="playerProfile" style="display:none; margin: 16px 0; padding: 12px; background: rgba(255,255,255,0.08); border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); text-align: center;">
+    <div style="display: flex; justify-content: space-around; font-size: 13px; margin-bottom: 8px;">
+      <div>Уровень <b id="playerLevel" style="color: var(--accent); font-size: 16px;">1</b></div>
+      <div>XP <b id="playerXP" style="color: var(--accent); font-size: 16px;">0</b></div>
+      <div>Рейтинг <b id="playerRating" style="color: var(--accent); font-size: 16px;">0</b></div>
+    </div>
+    <div style="background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden;">
+      <div id="playerXPBar" style="background: var(--accent); height: 100%; width: 0%; transition: width 0.3s;"></div>
+    </div>
+  </div>
+
+  <!-- Модалка IQ КАРТОЧКА (красивая победная карточка) -->
+  <div class="overlay" id="iqOverlay" style="display:none;">
+    <div class="iq-card">
+      <button class="modal-close" onclick="closeIQCard()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text);">✕</button>
+      <div style="text-align: center; padding: 24px;">
+        <h1 style="font-size: 48px; margin: 16px 0; color: var(--accent);">🧠</h1>
+        <h2 style="font-size: 32px; margin: 12px 0;">Твой IQ: <b id="iqScore">100</b></h2>
+        <p style="font-size: 20px; margin: 12px 0; color: var(--muted);"><b id="iqLabel">Среднестатистический</b></p>
+        <div style="margin: 24px 0; padding: 16px; background: rgba(255,255,255,0.08); border-radius: 12px;">
+          <p style="font-size: 14px; color: var(--muted); margin: 8px 0;">Попыток: <b id="iqAttempts">—</b></p>
+          <p style="font-size: 14px; color: var(--muted); margin: 8px 0;">Время: <b id="iqTime">—</b></p>
+          <p style="font-size: 14px; color: var(--muted); margin: 8px 0;">Процентиль: <b id="iqPercentile">—</b></p>
+        </div>
+        <button class="btn" onclick="closeIQCard()" style="width: 100%; margin-top: 16px;">Закрыть</button>
+        <button class="btn btn-secondary" onclick="shareIQ()" style="width: 100%; margin-top: 8px;">🔗 Поделиться</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Панель АЧИВОК -->
+  <div class="overlay" id="achievementsOverlay" style="display:none;">
+    <div class="modal">
+      <h2>🏅 Мои ачивки</h2>
+      <div id="achievementsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 12px; margin: 16px 0; max-height: 300px; overflow-y: auto;">
+        <!-- Динамически генерируется -->
+      </div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeAchievements()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Батл режим (новый режим вызова) -->
+  <div id="battleArea" style="display:none;">
+    <p class="cpu-prompt" id="battlePrompt">🔥 Соревнуйся с друзьями вживую!</p>
+    <div style="margin: 16px 0; padding: 12px; background: rgba(255,255,255,0.08); border-radius: 12px;">
+      <p style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">Режим батла:</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button class="btn" id="battleCreateBtn" style="grid-column: 1 / -1;">⚔️ Создать батл</button>
+      </div>
+    </div>
+    <div id="battleLinkWrap" style="display:none;">
+      <textarea id="battleLink" class="ch-link" readonly rows="2" placeholder="Ссылка батла"></textarea>
+      <button class="btn" id="battleCopy" style="width:100%; margin-top: 8px;">📋 Скопировать ссылку</button>
+    </div>
+    <div id="battleStatus" style="margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.08); border-radius: 8px; display:none; text-align: center;">
+      <p id="battleStatusText">Загружается...</p>
+    </div>
+  </div>
+
   <!-- Модалка таблицы лидеров -->
   <div class="overlay" id="overlay">
     <div class="modal">
@@ -504,6 +790,14 @@
     chLink: $("chLink"), chCopy: $("chCopy"),
     chPlayPrompt: $("chPlayPrompt"), chGuess: $("chGuess"), chCheck: $("chCheck"),
     chHint: $("chHint"), chAttempts: $("chAttempts"), chPlayAgain: $("chPlayAgain"),
+    playerProfile: $("playerProfile"), playerLevel: $("playerLevel"), playerXP: $("playerXP"),
+    playerRating: $("playerRating"), playerXPBar: $("playerXPBar"),
+    iqOverlay: $("iqOverlay"), iqScore: $("iqScore"), iqLabel: $("iqLabel"),
+    iqAttempts: $("iqAttempts"), iqTime: $("iqTime"), iqPercentile: $("iqPercentile"),
+    achievementsOverlay: $("achievementsOverlay"), achievementsList: $("achievementsList"),
+    battleArea: $("battleArea"), battleCreateBtn: $("battleCreateBtn"),
+    battleLinkWrap: $("battleLinkWrap"), battleLink: $("battleLink"), battleCopy: $("battleCopy"),
+    battleStatus: $("battleStatus"), battleStatusText: $("battleStatusText"),
   };
   let ch = { secret: 0, min: 1, max: 100, attempts: 0, over: false };
 
@@ -816,8 +1110,6 @@
     // Расчет IQ
     const iq = calculateIQ(state.attempts, seconds, state.maxAttempts, state.max);
     const bestIQ = saveIQ(iq);
-    const iqLabel = getIQLabel(iq);
-    const iqMsg = `\n🧠 Твой IQ: ${iq} баллов (${iqLabel.label})`;
 
     const records = loadRecords();
     const best = records[state.levelName];
@@ -833,12 +1125,24 @@
     else if (pos) lbMsg = ` — ${pos}-е место в топе!`;
 
     // Проверка ачивок
-    let achMsg = "";
-    if (state.attempts === 1) { if (unlockAchievement("one_try")) achMsg += "\n🎯 АЧИВКА: Снайпер!"; }
-    if (iq >= 95) { if (unlockAchievement("iq_genius")) achMsg += "\n🧠 АЧИВКА: Гений!"; }
+    let achievements = [];
+    if (state.attempts === 1) { if (unlockAchievement("one_try")) achievements.push("🎯 Снайпер"); }
+    if (iq >= 95) { if (unlockAchievement("iq_genius")) achievements.push("🧠 Гений"); }
+    if (iq >= 115) { if (unlockAchievement("iq_superb")) achievements.push("🤖 Сверхчеловек"); }
 
-    endGame(`🎉 Угадал за ${state.attempts} (${seconds}с)!${recordMsg}${lbMsg}${iqMsg}${achMsg}`, "win");
+    // Основное сообщение победы
+    let baseMsg = `🎉 Угадал за ${state.attempts} (${seconds}с)!${recordMsg}${lbMsg}`;
+    if (achievements.length > 0) {
+      baseMsg += "\n✨ " + achievements.join(" + ");
+    }
+
+    endGame(baseMsg, "win");
     updateRecordLabel(); confetti(); sounds.win();
+
+    // Показать красивую IQ карточку через 500мс
+    setTimeout(() => {
+      showIQCard(iq, state.attempts, seconds);
+    }, 500);
   }
 
   els.levels.addEventListener("click", (e) => {
@@ -849,8 +1153,16 @@
     state.min = +btn.dataset.min; state.max = +btn.dataset.max;
     state.maxAttempts = +btn.dataset.attempts; state.timeLimit = +btn.dataset.time;
     state.levelName = btn.dataset.name;
-    sounds.click(); newGame();
+    sounds.click();
+    // НЕ вызываем newGame() - ждём нажатия кнопки "Начать"
   });
+
+  // Кнопка "Начать игру" для классического режима
+  $("startClassicBtn")?.addEventListener("click", () => {
+    sounds.click();
+    newGame();
+  });
+
   els.checkBtn.addEventListener("click", check);
   els.guess.addEventListener("keydown", (e) => { if (e.key === "Enter") check(); });
   els.playAgain.addEventListener("click", () => { sounds.click(); newGame(); });
@@ -999,6 +1311,7 @@
     els.playerArea.style.display = mode === "player" ? "block" : "none";
     els.cpuArea.style.display = mode === "cpu" ? "block" : "none";
     els.chArea.style.display = mode === "challenge" ? "block" : "none";
+    els.battleArea.style.display = mode === "battle" ? "block" : "none";
     if (mode === "player") {
       els.subtitle.textContent = `Я загадал число от ${state.min} до ${state.max}`;
       newGame();
@@ -1006,10 +1319,14 @@
       stopTimer();
       els.subtitle.textContent = "Теперь угадываю я — а вы загадайте число!";
       cpuNewGame();
-    } else {
+    } else if (mode === "challenge") {
       stopTimer();
       els.subtitle.textContent = "Загадайте число другу или примите его вызов 🔗";
       showChallengeCreate();
+    } else if (mode === "battle") {
+      stopTimer();
+      els.subtitle.textContent = "⚔️ Соревнуйся с друзьями вживую!";
+      els.battleLinkWrap.style.display = "none";
     }
   }
 
@@ -1178,6 +1495,160 @@
     localStorage.setItem(STATS_KEY, JSON.stringify(stats));
   }
 
+  /* ========== ПРОФИЛЬ ИГРОКА & АЗАРТ СИСТЕМА ========== */
+  const PROFILE_KEY = "guessNumberProfile";
+
+  function getPlayerProfile() {
+    return JSON.parse(localStorage.getItem(PROFILE_KEY)) || { level: 1, xp: 0, rating: 0 };
+  }
+
+  function savePlayerProfile(profile) {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  }
+
+  function getPlayerLevel(xp) {
+    const xpPerLevel = 300;
+    return Math.floor(xp / xpPerLevel) + 1;
+  }
+
+  function getXPForLevel(level) {
+    return (level - 1) * 300;
+  }
+
+  function addXP(amount) {
+    const profile = getPlayerProfile();
+    profile.xp = (profile.xp || 0) + amount;
+    profile.level = getPlayerLevel(profile.xp);
+    savePlayerProfile(profile);
+    updateProfile();
+  }
+
+  function updateProfile() {
+    const profile = getPlayerProfile();
+    els.playerProfile.style.display = "block";
+    els.playerLevel.textContent = profile.level;
+    els.playerXP.textContent = profile.xp;
+    els.playerRating.textContent = profile.rating || 0;
+
+    const currentLevelXP = getXPForLevel(profile.level);
+    const nextLevelXP = getXPForLevel(profile.level + 1);
+    const progressPercent = ((profile.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+    els.playerXPBar.style.width = Math.min(progressPercent, 100) + "%";
+  }
+
+  function showIQCard(iq, attempts, seconds) {
+    const percentile = Math.min(99, Math.max(1, Math.round((iq / 120) * 99)));
+    els.iqScore.textContent = iq;
+    els.iqLabel.textContent = getIQLabel(iq).label;
+    els.iqAttempts.textContent = attempts;
+    els.iqTime.textContent = seconds + "с";
+    els.iqPercentile.textContent = "Выше чем " + percentile + "% игроков ↑";
+    els.iqOverlay.style.display = "flex";
+
+    // XP награда за игру
+    const xpReward = Math.max(10, Math.round(iq / 5));
+    addXP(xpReward);
+  }
+
+  function closeIQCard() {
+    els.iqOverlay.style.display = "none";
+  }
+
+  function shareIQ() {
+    const iq = els.iqScore.textContent;
+    const label = els.iqLabel.textContent;
+    const text = `🧠 Мой IQ в игре "Угадай число": ${iq} (${label})!\n\nТы сможешь ли?`;
+
+    if (navigator.share) {
+      navigator.share({ title: "Угадай число", text: text, url: location.href });
+    } else {
+      const encoded = encodeURIComponent(text + "\n\n" + location.href);
+      alert("Скопируйте текст:\n\n" + text);
+    }
+  }
+
+  function showAchievements() {
+    renderAchievements();
+    els.achievementsOverlay.style.display = "flex";
+  }
+
+  function closeAchievements() {
+    els.achievementsOverlay.style.display = "none";
+  }
+
+  function renderAchievements() {
+    const unlocked = loadAchievements();
+    els.achievementsList.innerHTML = "";
+
+    Object.entries(ACHIEVEMENTS).forEach(([id, ach]) => {
+      const div = document.createElement("div");
+      div.className = "ach-item " + (unlocked[id] ? "unlocked" : "locked");
+      div.innerHTML = `<div>${ach.icon}</div><div class="ach-name">${ach.name}</div>`;
+      div.title = ach.desc;
+      els.achievementsList.appendChild(div);
+    });
+  }
+
+  // Обновлять профиль при загрузке
+  document.addEventListener("DOMContentLoaded", () => {
+    updateProfile();
+    renderAchievements();
+  });
+
+  // Добавить кнопки для открытия ачивок и профиля
+  els.lbBtn.addEventListener("click", () => {
+    const rect = els.lbBtn.getBoundingClientRect();
+    if (rect.top > window.innerHeight / 2) {
+      // Над серединой - показать ачивки
+      showAchievements();
+    } else {
+      // Ниже - показать лидерборд
+      els.overlay.style.display = "flex";
+    }
+  });
+
+  // Батл режим
+  function createBattle() {
+    const secret = Math.floor(Math.random() * 100) + 1;
+    const payload = encodeChallenge({ n: secret, mode: "battle", by: playerNameOrDefault() });
+    const base = location.href.split("#")[0];
+    const link = base + "#b=" + payload;
+    els.battleLink.value = link;
+    els.battleLinkWrap.style.display = "block";
+    els.battleLink.select();
+  }
+
+  function copyBattleLink() {
+    els.battleLink.select();
+    const done = () => {
+      setHintText(els.battleCopy, "✅ Скопировано!");
+      sounds.click();
+      setTimeout(() => { els.battleCopy.textContent = "📋 Скопировать ссылку"; }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(els.battleLink.value).then(done, () => { document.execCommand("copy"); done(); });
+    } else {
+      try { document.execCommand("copy"); done(); } catch (e) { alert("Скопируйте ссылку вручную."); }
+    }
+  }
+
+  els.battleCreateBtn?.addEventListener("click", createBattle);
+  els.battleCopy?.addEventListener("click", copyBattleLink);
+
+  /* ---------- Подготовка игры (без запуска таймера) ---------- */
+  function prepareGame() {
+    state.secret = state.min + Math.floor(Math.random() * (state.max - state.min + 1));
+    state.attempts = 0;
+    state.over = false;
+    state.timeLeft = state.timeLimit;
+    els.guess.value = "";
+    els.guess.focus();
+    els.attemptsLeft.textContent = state.maxAttempts;
+    els.hint.textContent = "Введите число и нажмите «Проверить»";
+    els.guess.style.borderColor = "";
+    updateRecordLabel();
+  }
+
   /* ---------- Старт: если открыли по ссылке-вызову — сразу играем ---------- */
   function init() {
     const hash = location.hash || "";
@@ -1191,9 +1662,11 @@
         }
       } catch (e) { /* битая ссылка — просто откроем обычный режим */ }
     }
-    newGame();
+    prepareGame();
   }
   init();
+  updateProfile();
+  renderAchievements();
 
   // PWA: Регистрация Service Worker
   if ('serviceWorker' in navigator) {
