@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Угадай число</title>
+<style>
+  :root {
+    --bg1: #6366f1;
+    --bg2: #a855f7;
+    --bg3: #ec4899;
+    --card: rgba(255, 255, 255, 0.12);
+    --card-border: rgba(255, 255, 255, 0.25);
+    --text: #ffffff;
+    --muted: rgba(255, 255, 255, 0.85);
+    --input-bg: rgba(255, 255, 255, 0.95);
+    --input-text: #1f2937;
+    --accent: #fbbf24;
+    --accent-text: #1f2937;
+    --high: #60a5fa;
+    --low: #f472b6;
+    --win: #34d399;
+    --error: #f87171;
+  }
+
+  body.light {
+    --bg1: #fde68a;
+    --bg2: #fca5a5;
+    --bg3: #a5b4fc;
+    --card: rgba(255, 255, 255, 0.55);
+    --card-border: rgba(255, 255, 255, 0.8);
+    --text: #1f2937;
+    --muted: rgba(31, 41, 55, 0.75);
+    --input-bg: rgba(255, 255, 255, 0.95);
+    --input-text: #1f2937;
+    --accent: #6366f1;
+    --accent-text: #ffffff;
+    --high: #2563eb;
+    --low: #db2777;
+    --win: #059669;
+    --error: #dc2626;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+    background: linear-gradient(-45deg, var(--bg1), var(--bg2), var(--bg3), var(--bg1));
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    padding: 16px;
+    transition: color 0.4s;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .card {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    background: var(--card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: background 0.4s, border-color 0.4s;
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .top-bar {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    gap: 6px;
+  }
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .icon-btn:hover { transform: scale(1.12); background: rgba(255, 255, 255, 0.25); }
+
+  h1 { font-size: 1.9rem; margin-bottom: 4px; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
+  .subtitle { font-size: 0.92rem; color: var(--muted); margin-bottom: 14px; }
+
+  /* Имя игрока */
+  .name-row { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 16px; font-size: 0.9rem; }
+  .name-row label { color: var(--muted); }
+  #playerName {
+    flex: 0 1 180px; padding: 8px 12px; font-size: 0.9rem;
+    border: 1px solid var(--card-border); border-radius: 10px;
+    background: var(--input-bg); color: var(--input-text); outline: none; text-align: center;
+  }
+  #playerName:focus { border-color: var(--accent); }
+
+  /* Переключатель режимов */
+  .modes {
+    display: flex; gap: 0; background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--card-border); border-radius: 14px; padding: 4px; margin-bottom: 18px;
+  }
+  .mode-btn {
+    flex: 1; padding: 9px 6px; border: none; border-radius: 10px; background: transparent;
+    color: var(--text); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease;
+  }
+  .mode-btn.active { background: var(--accent); color: var(--accent-text); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); }
+
+  .levels { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .level-btn {
+    flex: 1; min-width: 90px; padding: 10px 6px;
+    border: 1px solid var(--card-border); border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08); color: var(--text);
+    font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+  }
+  .level-btn:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+  .level-btn.active {
+    background: var(--accent); color: var(--accent-text); border-color: var(--accent);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+  .level-btn small { display: block; font-weight: 400; opacity: 0.8; font-size: 0.72rem; }
+
+  /* Таймер */
+  .timer-wrap { margin-bottom: 16px; }
+  .timer-top { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
+  #timerSeconds { font-weight: 700; color: var(--text); }
+  .timer-bar { height: 8px; border-radius: 6px; background: rgba(255,255,255,0.18); overflow: hidden; }
+  .timer-fill {
+    height: 100%; width: 100%; border-radius: 6px;
+    background: linear-gradient(90deg, var(--win), var(--accent));
+    transition: width 1s linear, background 0.3s;
+  }
+  .timer-fill.warn { background: linear-gradient(90deg, var(--accent), var(--error)); }
+  .timer-fill.danger { background: var(--error); animation: pulse 0.6s ease infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .input-row { display: flex; gap: 10px; margin-bottom: 18px; }
+  #guess {
+    flex: 1; padding: 14px; font-size: 1.3rem; text-align: center;
+    border: 2px solid var(--card-border); border-radius: 14px;
+    background: var(--input-bg); color: var(--input-text);
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s; -moz-appearance: textfield;
+  }
+  #guess::-webkit-outer-spin-button, #guess::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  #guess:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25); }
+
+  .btn {
+    padding: 14px 22px; font-size: 1rem; font-weight: 700; border: none;
+    border-radius: 14px; cursor: pointer; background: var(--accent); color: var(--accent-text);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+  .btn:active:not(:disabled) { transform: translateY(0); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .hint { font-size: 1.3rem; font-weight: 700; min-height: 1.6em; margin-bottom: 14px; transition: color 0.3s; }
+  .hint.high { color: var(--high); }
+  .hint.low { color: var(--low); }
+  .hint.win { color: var(--win); }
+  .hint.error { color: var(--error); }
+  .hint.bump { animation: bump 0.4s ease; }
+  @keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+
+  .arrow { font-size: 2.2rem; display: inline-block; }
+  .arrow.up { animation: floatUp 1s ease infinite; }
+  .arrow.down { animation: floatDown 1s ease infinite; }
+  @keyframes floatUp { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes floatDown { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+
+  .stats { display: flex; justify-content: space-around; font-size: 0.9rem; color: var(--muted); margin: 16px 0 8px; }
+  .stats b { font-size: 1.15rem; display: block; color: var(--text); }
+  .record { font-size: 0.85rem; color: var(--muted); margin-top: 4px; min-height: 1.2em; }
+
+  .play-again { margin-top: 14px; background: var(--win); color: #fff; display: none; }
+
+  .cpu-area { display: none; }
+  .cpu-guess { font-size: 3rem; font-weight: 800; margin: 6px 0 16px; color: var(--accent); text-shadow: 0 2px 12px rgba(0,0,0,0.2); animation: bump 0.4s ease; }
+  .cpu-buttons { display: flex; gap: 10px; }
+  .cpu-buttons .btn { flex: 1; }
+  .btn-less { background: var(--low); color: #fff; }
+  .btn-more { background: var(--high); color: #fff; }
+  .btn-yes { background: var(--win); color: #fff; }
+  .cpu-prompt { font-size: 0.95rem; color: var(--muted); margin-bottom: 14px; }
+
+  .ch-area { display: none; }
+  .ch-link {
+    width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--card-border);
+    background: var(--input-bg); color: var(--input-text); font-size: 0.8rem;
+    resize: none; outline: none; margin-bottom: 10px; font-family: monospace; word-break: break-all;
+  }
+
+  .confetti { position: fixed; top: -10px; width: 10px; height: 10px; pointer-events: none; z-index: 999; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(105vh) rotate(720deg); opacity: 0.9; } }
+
+  .shake { animation: shake 0.4s ease; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); } 40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); } 80% { transform: translateX(6px); }
+  }
+
+  /* Модалка таблицы лидеров */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+    animation: fadeIn 0.25s ease;
+  }
+  .overlay.show { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    width: 100%; max-width: 420px; background: var(--card); backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px); border: 1px solid var(--card-border);
+    border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); color: var(--text);
+  }
+  .modal h2 { text-align: center; margin-bottom: 14px; font-size: 1.4rem; }
+  .lb-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .lb-tab {
+    flex: 1; padding: 8px; border: 1px solid var(--card-border); border-radius: 10px;
+    background: rgba(255,255,255,0.08); color: var(--text); font-size: 0.8rem; font-weight: 600; cursor: pointer;
+  }
+  .lb-tab.active { background: var(--accent); color: var(--accent-text); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 9px 8px; text-align: left; font-size: 0.9rem; }
+  th { color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--card-border); }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.1); }
+  tbody tr:nth-child(1) td { font-weight: 800; }
+  td.rank { width: 36px; text-align: center; }
+  td.num { text-align: right; }
+  .lb-empty { text-align: center; color: var(--muted); padding: 20px 0; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .modal-actions .btn { flex: 1; }
+  .btn-secondary { background: rgba(255,255,255,0.15); color: var(--text); box-shadow: none; }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="top-bar">
+      <button class="icon-btn" id="lbBtn" title="Таблица лидеров">🏆</button>
+      <button class="icon-btn" id="soundBtn" title="Звук">🔊</button>
+      <button class="icon-btn" id="themeBtn" title="Тема">🌙</button>
+    </div>
+
+    <h1>🎯 Угадай число</h1>
+    <p class="subtitle" id="subtitle">Я загадал число от 1 до 100</p>
+
+    <div class="modes" id="modes">
+      <button class="mode-btn active" data-mode="player">🧑 Я угадываю</button>
+      <button class="mode-btn" data-mode="cpu">🤖 Компьютер</button>
+      <button class="mode-btn" data-mode="challenge">🔗 Вызов другу</button>
+    </div>
+
+    <!-- РЕЖИМ: игрок угадывает -->
+    <div id="playerArea">
+      <div class="name-row">
+        <label for="playerName">Игрок:</label>
+        <input type="text" id="playerName" maxlength="16" placeholder="Ваше имя">
+      </div>
+
+      <div class="levels" id="levels">
+        <button class="level-btn" data-min="1" data-max="50" data-attempts="10" data-time="40" data-name="Лёгкий">Лёгкий<small>1–50 · 40с</small></button>
+        <button class="level-btn active" data-min="1" data-max="100" data-attempts="7" data-time="30" data-name="Средний">Средний<small>1–100 · 30с</small></button>
+        <button class="level-btn" data-min="1" data-max="1000" data-attempts="10" data-time="25" data-name="Сложный">Сложный<small>1–1000 · 25с</small></button>
+      </div>
+
+      <div class="timer-wrap">
+        <div class="timer-top">
+          <span>⏱️ Время</span>
+          <span id="timerSeconds">30</span>
+        </div>
+        <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+      </div>
+
+      <div class="input-row">
+        <input type="number" id="guess" placeholder="?" autocomplete="off">
+        <button class="btn" id="checkBtn">Проверить</button>
+      </div>
+
+      <div class="hint" id="hint">Введите число и нажмите «Проверить»</div>
+
+      <div class="stats">
+        <div>Попытки<b id="attemptsLeft">7</b></div>
+        <div>Побед<b id="wins">0</b></div>
+        <div>Поражений<b id="losses">0</b></div>
+      </div>
+      <div class="record" id="record">Рекорда ещё нет</div>
+
+      <button class="btn play-again" id="playAgain">🔄 Играть снова</button>
+    </div>
+
+    <!-- РЕЖИМ: компьютер угадывает -->
+    <div class="cpu-area" id="cpuArea">
+      <p class="cpu-prompt" id="cpuPrompt">Загадайте число от 1 до 100 и отвечайте мне честно 🤝</p>
+      <div class="cpu-guess" id="cpuGuess">—</div>
+      <div class="hint" id="cpuHint">Моё число больше, меньше или я угадал?</div>
+      <div class="cpu-buttons" id="cpuButtons">
+        <button class="btn btn-less" id="cpuLess">⬇️ Меньше</button>
+        <button class="btn btn-yes" id="cpuYes">🎯 Угадал!</button>
+        <button class="btn btn-more" id="cpuMore">⬆️ Больше</button>
+      </div>
+      <button class="btn play-again" id="cpuRestart" style="display:none;">🔄 Сыграть снова</button>
+    </div>
+
+    <!-- РЕЖИМ: вызов другу -->
+    <div class="ch-area" id="chArea">
+      <!-- Создание вызова -->
+      <div id="chCreate">
+        <p class="cpu-prompt">Загадайте число от 1 до 100 — я сделаю ссылку, отправьте её другу 🔗</p>
+        <div class="input-row">
+          <input type="number" id="chSecret" placeholder="Число 1–100" autocomplete="off">
+          <button class="btn" id="chMake">Создать</button>
+        </div>
+        <div id="chLinkWrap" style="display:none;">
+          <textarea id="chLink" class="ch-link" readonly rows="3"></textarea>
+          <button class="btn" id="chCopy" style="width:100%;">📋 Скопировать ссылку</button>
+          <p class="cpu-prompt" id="chCopyHint" style="margin-top:10px;">Отправьте эту ссылку другу — он откроет её и будет угадывать ваше число.</p>
+        </div>
+      </div>
+
+      <!-- Игра по полученному вызову -->
+      <div id="chPlay" style="display:none;">
+        <p class="cpu-prompt" id="chPlayPrompt">Друг загадал число от 1 до 100. Угадайте его!</p>
+        <div class="input-row">
+          <input type="number" id="chGuess" placeholder="?" autocomplete="off">
+          <button class="btn" id="chCheck">Проверить</button>
+        </div>
+        <div class="hint" id="chHint">Введите число и нажмите «Проверить»</div>
+        <div class="stats"><div>Попытки<b id="chAttempts">0</b></div></div>
+        <button class="btn play-again" id="chPlayAgain" style="display:none;">🔗 Загадать своё число</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка таблицы лидеров -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h2>🏆 Таблица лидеров</h2>
+      <div class="lb-tabs" id="lbTabs">
+        <button class="lb-tab active" data-name="Лёгкий">Лёгкий</button>
+        <button class="lb-tab" data-name="Средний">Средний</button>
+        <button class="lb-tab" data-name="Сложный">Сложный</button>
+      </div>
+      <div id="lbBody"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="lbExport">💾 Экспорт</button>
+        <button class="btn btn-secondary" id="lbImport">📂 Импорт</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="lbClear">🗑️ Очистить</button>
+        <button class="btn" id="lbClose">Закрыть</button>
+      </div>
+      <input type="file" id="lbFile" accept="application/json,.json" style="display:none;">
+    </div>
+  </div>
+
+<script>
+  const RECORDS_KEY = "guessNumberRecords";
+  const LEADERBOARD_KEY = "guessNumberLeaderboard";
+  const SOUND_KEY = "guessNumberSound";
+  const THEME_KEY = "guessNumberTheme";
+  const NAME_KEY = "guessNumberName";
+  const MAX_LB = 5; // сколько мест в таблице на уровень
+
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    card: $("card"), subtitle: $("subtitle"), modes: $("modes"),
+    playerArea: $("playerArea"), cpuArea: $("cpuArea"),
+    playerName: $("playerName"),
+    levels: $("levels"), guess: $("guess"), checkBtn: $("checkBtn"),
+    hint: $("hint"), attemptsLeft: $("attemptsLeft"), wins: $("wins"),
+    losses: $("losses"), record: $("record"), playAgain: $("playAgain"),
+    soundBtn: $("soundBtn"), themeBtn: $("themeBtn"), lbBtn: $("lbBtn"),
+    timerSeconds: $("timerSeconds"), timerFill: $("timerFill"),
+    cpuPrompt: $("cpuPrompt"), cpuGuess: $("cpuGuess"), cpuHint: $("cpuHint"),
+    cpuButtons: $("cpuButtons"), cpuLess: $("cpuLess"), cpuYes: $("cpuYes"),
+    cpuMore: $("cpuMore"), cpuRestart: $("cpuRestart"),
+    overlay: $("overlay"), lbTabs: $("lbTabs"), lbBody: $("lbBody"),
+    lbClear: $("lbClear"), lbClose: $("lbClose"),
+    lbExport: $("lbExport"), lbImport: $("lbImport"), lbFile: $("lbFile"),
+    chArea: $("chArea"), chCreate: $("chCreate"), chPlay: $("chPlay"),
+    chSecret: $("chSecret"), chMake: $("chMake"), chLinkWrap: $("chLinkWrap"),
+    chLink: $("chLink"), chCopy: $("chCopy"),
+    chPlayPrompt: $("chPlayPrompt"), chGuess: $("chGuess"), chCheck: $("chCheck"),
+    chHint: $("chHint"), chAttempts: $("chAttempts"), chPlayAgain: $("chPlayAgain"),
+  };
+  let ch = { secret: 0, min: 1, max: 100, attempts: 0, over: false };
+
+  let state = {
+    min: 1, max: 100, maxAttempts: 7, timeLimit: 30, levelName: "Средний",
+    secret: 0, attempts: 0, over: false, wins: 0, losses: 0,
+    timeLeft: 30, timerId: null, startTs: 0,
+  };
+  let cpu = { lo: 1, hi: 100, guess: 0, tries: 0, over: false };
+
+  /* ---------- Звук ---------- */
+  let soundOn = localStorage.getItem(SOUND_KEY) !== "off";
+  let audioCtx = null;
+  function beep(freq, duration = 0.12, type = "sine", vol = 0.15) {
+    if (!soundOn) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + duration);
+    } catch (e) {}
+  }
+  const sounds = {
+    click: () => beep(440, 0.07, "square", 0.08),
+    high: () => beep(523, 0.12, "sine"),
+    low: () => beep(392, 0.12, "sine"),
+    tick: () => beep(880, 0.05, "square", 0.06),
+    error: () => beep(160, 0.25, "sawtooth", 0.12),
+    win: () => { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.18, "triangle", 0.18), i * 110)); },
+    lose: () => { [330, 277, 220].forEach((f, i) => setTimeout(() => beep(f, 0.25, "sawtooth", 0.12), i * 160)); },
+  };
+  function updateSoundBtn() {
+    els.soundBtn.textContent = soundOn ? "🔊" : "🔇";
+    els.soundBtn.title = soundOn ? "Звук включён" : "Звук выключен";
+  }
+  els.soundBtn.addEventListener("click", () => {
+    soundOn = !soundOn;
+    localStorage.setItem(SOUND_KEY, soundOn ? "on" : "off");
+    updateSoundBtn();
+    if (soundOn) sounds.click();
+  });
+
+  /* ---------- Тема ---------- */
+  function applyTheme(light) {
+    document.body.classList.toggle("light", light);
+    els.themeBtn.textContent = light ? "☀️" : "🌙";
+    localStorage.setItem(THEME_KEY, light ? "light" : "dark");
+  }
+  els.themeBtn.addEventListener("click", () => {
+    applyTheme(!document.body.classList.contains("light")); sounds.click();
+  });
+  applyTheme(localStorage.getItem(THEME_KEY) === "light");
+  updateSoundBtn();
+
+  /* ---------- Имя игрока ---------- */
+  els.playerName.value = localStorage.getItem(NAME_KEY) || "";
+  els.playerName.addEventListener("input", () => {
+    localStorage.setItem(NAME_KEY, els.playerName.value.trim());
+  });
+  function playerNameOrDefault() {
+    return els.playerName.value.trim() || "Аноним";
+  }
+
+  /* ---------- Рекорды (минимум попыток) ---------- */
+  function loadRecords() {
+    try { return JSON.parse(localStorage.getItem(RECORDS_KEY)) || {}; } catch { return {}; }
+  }
+  function saveRecords(r) { localStorage.setItem(RECORDS_KEY, JSON.stringify(r)); }
+  function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function updateRecordLabel() {
+    const best = loadRecords()[state.levelName];
+    els.record.textContent = best != null
+      ? `🏆 Рекорд «${state.levelName}»: ${best} попыток`
+      : `Рекорда «${state.levelName}» ещё нет`;
+  }
+
+  /* ---------- Таблица лидеров ---------- */
+  function loadLeaderboard() {
+    try { return JSON.parse(localStorage.getItem(LEADERBOARD_KEY)) || {}; } catch { return {}; }
+  }
+  function saveLeaderboard(lb) { localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(lb)); }
+
+  // Возвращает позицию (1..MAX_LB) или null, если результат не попал в таблицу
+  function addToLeaderboard(level, name, attempts, seconds) {
+    const lb = loadLeaderboard();
+    const list = lb[level] || [];
+    const entry = { name, attempts, seconds };
+    list.push(entry);
+    // сортировка: меньше попыток лучше, при равенстве — меньше времени
+    list.sort((a, b) => a.attempts - b.attempts || a.seconds - b.seconds);
+    const trimmed = list.slice(0, MAX_LB);
+    lb[level] = trimmed;
+    saveLeaderboard(lb);
+    const pos = trimmed.indexOf(entry);
+    return pos === -1 ? null : pos + 1;
+  }
+
+  let lbActiveTab = "Средний";
+  function renderLeaderboard() {
+    const lb = loadLeaderboard();
+    const list = lb[lbActiveTab] || [];
+    if (!list.length) {
+      els.lbBody.innerHTML = '<div class="lb-empty">Пока никто не играл на этом уровне 🙂</div>';
+      return;
+    }
+    const medals = ["🥇", "🥈", "🥉"];
+    let rows = list.map((e, i) => `
+      <tr>
+        <td class="rank">${medals[i] || (i + 1)}</td>
+        <td>${escapeHtml(e.name)}</td>
+        <td class="num">${e.attempts} поп.</td>
+        <td class="num">${e.seconds}с</td>
+      </tr>`).join("");
+    els.lbBody.innerHTML = `
+      <table>
+        <thead><tr><th></th><th>Игрок</th><th class="num">Попытки</th><th class="num">Время</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function openLeaderboard() {
+    lbActiveTab = state.levelName;
+    [...els.lbTabs.children].forEach((b) => b.classList.toggle("active", b.dataset.name === lbActiveTab));
+    renderLeaderboard();
+    els.overlay.classList.add("show");
+    sounds.click();
+  }
+  els.lbBtn.addEventListener("click", openLeaderboard);
+  els.lbClose.addEventListener("click", () => { els.overlay.classList.remove("show"); sounds.click(); });
+  els.overlay.addEventListener("click", (e) => { if (e.target === els.overlay) els.overlay.classList.remove("show"); });
+  els.lbTabs.addEventListener("click", (e) => {
+    const btn = e.target.closest(".lb-tab");
+    if (!btn) return;
+    lbActiveTab = btn.dataset.name;
+    [...els.lbTabs.children].forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderLeaderboard(); sounds.click();
+  });
+  els.lbClear.addEventListener("click", () => {
+    if (confirm("Очистить всю таблицу лидеров? Это нельзя отменить.")) {
+      localStorage.removeItem(LEADERBOARD_KEY);
+      renderLeaderboard(); sounds.click();
+    }
+  });
+
+  // Экспорт таблицы лидеров в JSON-файл
+  els.lbExport.addEventListener("click", () => {
+    const data = JSON.stringify(loadLeaderboard(), null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "guess-number-leaderboard.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    sounds.click();
+  });
+
+  // Импорт таблицы лидеров из файла (объединяет с текущей)
+  els.lbImport.addEventListener("click", () => { els.lbFile.value = ""; els.lbFile.click(); });
+  els.lbFile.addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const incoming = JSON.parse(reader.result);
+        const current = loadLeaderboard();
+        for (const level of Object.keys(incoming)) {
+          const merged = (current[level] || []).concat(incoming[level] || [])
+            .filter((x) => x && typeof x.attempts === "number")
+            .sort((a, b) => a.attempts - b.attempts || (a.seconds || 0) - (b.seconds || 0))
+            .slice(0, MAX_LB);
+          current[level] = merged;
+        }
+        saveLeaderboard(current);
+        renderLeaderboard();
+        sounds.win();
+        alert("Таблица лидеров импортирована и объединена с текущей.");
+      } catch (err) {
+        sounds.error();
+        alert("Не удалось прочитать файл — он повреждён или это не та таблица.");
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  /* ---------- Анимации-хелперы ---------- */
+  function bump(el) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+  function shake() { els.card.classList.remove("shake"); void els.card.offsetWidth; els.card.classList.add("shake"); }
+  function setHint(el, text, cls) { el.className = "hint " + cls; el.innerHTML = text; bump(el); }
+  function confetti() {
+    const colors = ["#fbbf24", "#34d399", "#60a5fa", "#f472b6", "#a855f7", "#ffffff"];
+    for (let i = 0; i < 80; i++) {
+      const c = document.createElement("div");
+      c.className = "confetti";
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDuration = (Math.random() * 1.5 + 1.5) + "s";
+      c.style.animationDelay = Math.random() * 0.4 + "s";
+      if (Math.random() > 0.5) c.style.borderRadius = "50%";
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 3500);
+    }
+  }
+
+  /* ---------- Таймер ---------- */
+  function stopTimer() {
+    if (state.timerId) { clearInterval(state.timerId); state.timerId = null; }
+  }
+  function renderTimer() {
+    els.timerSeconds.textContent = state.timeLeft;
+    const pct = (state.timeLeft / state.timeLimit) * 100;
+    els.timerFill.style.width = pct + "%";
+    els.timerFill.className = "timer-fill" +
+      (state.timeLeft <= 5 ? " danger" : state.timeLeft <= 10 ? " warn" : "");
+  }
+  function startTimer() {
+    stopTimer();
+    state.timeLeft = state.timeLimit;
+    state.startTs = (window.performance && performance.now()) || 0;
+    renderTimer();
+    state.timerId = setInterval(() => {
+      state.timeLeft--;
+      renderTimer();
+      if (state.timeLeft <= 5 && state.timeLeft > 0) sounds.tick();
+      if (state.timeLeft <= 0) {
+        stopTimer();
+        timeUp();
+      }
+    }, 1000);
+  }
+  function elapsedSeconds() {
+    const now = (window.performance && performance.now()) || 0;
+    const byClock = state.startTs ? Math.round((now - state.startTs) / 1000) : null;
+    return byClock != null ? byClock : (state.timeLimit - state.timeLeft);
+  }
+  function timeUp() {
+    state.losses++; els.losses.textContent = state.losses;
+    endGame(`⏰ Время вышло! Число было ${state.secret}`, "error");
+    shake(); sounds.lose();
+  }
+
+  /* ---------- Режим: игрок угадывает ---------- */
+  function newGame() {
+    stopTimer();
+    state.secret = randomInt(state.min, state.max);
+    state.attempts = 0;
+    state.over = false;
+    els.subtitle.textContent = `Я загадал число от ${state.min} до ${state.max}`;
+    els.attemptsLeft.textContent = state.maxAttempts;
+    els.guess.value = "";
+    els.guess.min = state.min; els.guess.max = state.max;
+    els.guess.disabled = false; els.checkBtn.disabled = false;
+    els.guess.focus();
+    els.playAgain.style.display = "none";
+    setHint(els.hint, "Введите число и нажмите «Проверить»", "");
+    updateRecordLabel();
+    state.timeLeft = state.timeLimit;
+    renderTimer();
+    startTimer();
+  }
+  function endGame(text, cls) {
+    stopTimer();
+    state.over = true;
+    els.guess.disabled = true; els.checkBtn.disabled = true;
+    els.playAgain.style.display = "inline-block";
+    setHint(els.hint, text, cls);
+  }
+  function check() {
+    if (state.over) return;
+    const raw = els.guess.value.trim();
+    if (raw === "" || isNaN(Number(raw)) || !Number.isInteger(Number(raw))) {
+      setHint(els.hint, "Введите целое число 🙃", "error"); shake(); sounds.error(); return;
+    }
+    const guess = Number(raw);
+    if (guess < state.min || guess > state.max) {
+      setHint(els.hint, `Число от ${state.min} до ${state.max}!`, "error"); shake(); sounds.error(); return;
+    }
+    state.attempts++;
+    els.attemptsLeft.textContent = state.maxAttempts - state.attempts;
+    els.guess.value = ""; els.guess.focus();
+
+    if (guess < state.secret) {
+      setHint(els.hint, 'Больше <span class="arrow up">⬆️</span>', "high"); sounds.high();
+    } else if (guess > state.secret) {
+      setHint(els.hint, 'Меньше <span class="arrow down">⬇️</span>', "low"); sounds.low();
+    } else { win(); return; }
+
+    if (state.attempts >= state.maxAttempts) {
+      state.losses++; els.losses.textContent = state.losses;
+      endGame(`💀 Попытки кончились. Число было ${state.secret}`, "error");
+      shake(); sounds.lose();
+    }
+  }
+  function win() {
+    const seconds = elapsedSeconds();
+    state.wins++; els.wins.textContent = state.wins;
+
+    const records = loadRecords();
+    const best = records[state.levelName];
+    let recordMsg = "";
+    if (best == null || state.attempts < best) {
+      records[state.levelName] = state.attempts; saveRecords(records);
+      recordMsg = " 🏆 Новый рекорд!";
+    }
+
+    const pos = addToLeaderboard(state.levelName, playerNameOrDefault(), state.attempts, seconds);
+    let lbMsg = "";
+    if (pos === 1) lbMsg = " 🥇 1-е место!";
+    else if (pos) lbMsg = ` — ${pos}-е место в топе!`;
+
+    endGame(`🎉 Угадал за ${state.attempts} (${seconds}с)!${recordMsg}${lbMsg}`, "win");
+    updateRecordLabel(); confetti(); sounds.win();
+  }
+
+  els.levels.addEventListener("click", (e) => {
+    const btn = e.target.closest(".level-btn");
+    if (!btn) return;
+    [...els.levels.children].forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    state.min = +btn.dataset.min; state.max = +btn.dataset.max;
+    state.maxAttempts = +btn.dataset.attempts; state.timeLimit = +btn.dataset.time;
+    state.levelName = btn.dataset.name;
+    sounds.click(); newGame();
+  });
+  els.checkBtn.addEventListener("click", check);
+  els.guess.addEventListener("keydown", (e) => { if (e.key === "Enter") check(); });
+  els.playAgain.addEventListener("click", () => { sounds.click(); newGame(); });
+
+  /* ---------- Режим: компьютер угадывает ---------- */
+  function cpuNewGame() {
+    cpu = { lo: 1, hi: 100, tries: 0, over: false, guess: 0 };
+    els.cpuPrompt.textContent = "Загадайте число от 1 до 100 и отвечайте мне честно 🤝";
+    els.cpuButtons.style.display = "flex";
+    els.cpuRestart.style.display = "none";
+    setHint(els.cpuHint, "Моё число больше, меньше или я угадал?", "");
+    cpuMakeGuess();
+  }
+  function cpuMakeGuess() {
+    cpu.tries++;
+    cpu.guess = Math.floor((cpu.lo + cpu.hi) / 2);
+    els.cpuGuess.textContent = cpu.guess;
+    bump(els.cpuGuess); sounds.click();
+  }
+  function cpuAnswer(dir) {
+    if (cpu.over) return;
+    if (dir === "yes") {
+      els.cpuButtons.style.display = "none";
+      els.cpuRestart.style.display = "inline-block";
+      cpu.over = true;
+      setHint(els.cpuHint, `🎉 Я угадал за ${cpu.tries}!`, "win");
+      confetti(); sounds.win(); return;
+    }
+    if (dir === "more") cpu.lo = cpu.guess + 1; else cpu.hi = cpu.guess - 1;
+    if (cpu.lo > cpu.hi) {
+      els.cpuButtons.style.display = "none";
+      els.cpuRestart.style.display = "inline-block";
+      cpu.over = true;
+      setHint(els.cpuHint, "🤔 Хм, такого числа быть не может. Кто-то схитрил!", "error");
+      shake(); sounds.error(); return;
+    }
+    setHint(els.cpuHint, dir === "more" ? "Беру больше ⬆️" : "Беру меньше ⬇️", dir === "more" ? "high" : "low");
+    if (dir === "more") sounds.high(); else sounds.low();
+    cpuMakeGuess();
+  }
+  els.cpuLess.addEventListener("click", () => cpuAnswer("less"));
+  els.cpuMore.addEventListener("click", () => cpuAnswer("more"));
+  els.cpuYes.addEventListener("click", () => cpuAnswer("yes"));
+  els.cpuRestart.addEventListener("click", cpuNewGame);
+
+  /* ---------- Режим: вызов другу (через ссылку, без сервера) ---------- */
+  function encodeChallenge(obj) {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+  }
+  function decodeChallenge(str) {
+    return JSON.parse(decodeURIComponent(escape(atob(str))));
+  }
+
+  function showChallengeCreate() {
+    els.chCreate.style.display = "block";
+    els.chPlay.style.display = "none";
+    els.chLinkWrap.style.display = "none";
+    els.chSecret.value = "";
+    els.chSecret.focus();
+  }
+
+  function makeChallenge() {
+    const raw = els.chSecret.value.trim();
+    const n = Number(raw);
+    if (raw === "" || !Number.isInteger(n) || n < 1 || n > 100) {
+      els.chSecret.focus(); shake(); sounds.error();
+      alert("Загадайте целое число от 1 до 100.");
+      return;
+    }
+    const payload = encodeChallenge({ n: n, min: 1, max: 100, by: playerNameOrDefault() });
+    const base = location.href.split("#")[0];
+    const link = base + "#c=" + payload;
+    els.chLink.value = link;
+    els.chLinkWrap.style.display = "block";
+    els.chLink.focus();
+    els.chLink.select();
+    sounds.win();
+  }
+
+  function copyChallengeLink() {
+    els.chLink.select();
+    const done = () => { setHintText(els.chCopy, "✅ Скопировано!"); sounds.click();
+      setTimeout(() => { els.chCopy.textContent = "📋 Скопировать ссылку"; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(els.chLink.value).then(done, () => { document.execCommand("copy"); done(); });
+    } else {
+      try { document.execCommand("copy"); done(); } catch (e) { alert("Скопируйте ссылку вручную."); }
+    }
+  }
+  function setHintText(btn, text) { btn.textContent = text; }
+
+  function startChallengePlay(data) {
+    ch = { secret: data.n, min: data.min || 1, max: data.max || 100, attempts: 0, over: false };
+    els.chCreate.style.display = "none";
+    els.chPlay.style.display = "block";
+    const by = data.by ? escapeHtml(data.by) : "Друг";
+    els.chPlayPrompt.innerHTML = `<b>${by}</b> загадал число от ${ch.min} до ${ch.max}. Угадайте его!`;
+    els.chAttempts.textContent = "0";
+    els.chGuess.value = "";
+    els.chGuess.disabled = false; els.chCheck.disabled = false;
+    els.chPlayAgain.style.display = "none";
+    setHint(els.chHint, "Введите число и нажмите «Проверить»", "");
+    els.chGuess.focus();
+  }
+
+  function checkChallenge() {
+    if (ch.over) return;
+    const raw = els.chGuess.value.trim();
+    if (raw === "" || isNaN(Number(raw)) || !Number.isInteger(Number(raw))) {
+      setHint(els.chHint, "Введите целое число 🙃", "error"); shake(); sounds.error(); return;
+    }
+    const guess = Number(raw);
+    if (guess < ch.min || guess > ch.max) {
+      setHint(els.chHint, `Число от ${ch.min} до ${ch.max}!`, "error"); shake(); sounds.error(); return;
+    }
+    ch.attempts++;
+    els.chAttempts.textContent = ch.attempts;
+    els.chGuess.value = ""; els.chGuess.focus();
+
+    if (guess < ch.secret) {
+      setHint(els.chHint, 'Больше <span class="arrow up">⬆️</span>', "high"); sounds.high();
+    } else if (guess > ch.secret) {
+      setHint(els.chHint, 'Меньше <span class="arrow down">⬇️</span>', "low"); sounds.low();
+    } else {
+      ch.over = true;
+      els.chGuess.disabled = true; els.chCheck.disabled = true;
+      els.chPlayAgain.style.display = "inline-block";
+      setHint(els.chHint, `🎉 Угадали за ${ch.attempts}!`, "win");
+      confetti(); sounds.win();
+    }
+  }
+
+  els.chMake.addEventListener("click", makeChallenge);
+  els.chSecret.addEventListener("keydown", (e) => { if (e.key === "Enter") makeChallenge(); });
+  els.chCopy.addEventListener("click", copyChallengeLink);
+  els.chCheck.addEventListener("click", checkChallenge);
+  els.chGuess.addEventListener("keydown", (e) => { if (e.key === "Enter") checkChallenge(); });
+  els.chPlayAgain.addEventListener("click", () => {
+    // очистить ссылку-вызов из адреса и вернуться к созданию своего
+    if (location.hash) history.replaceState(null, "", location.href.split("#")[0]);
+    showChallengeCreate(); sounds.click();
+  });
+
+  function activateMode(mode) {
+    [...els.modes.children].forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
+    els.playerArea.style.display = mode === "player" ? "block" : "none";
+    els.cpuArea.style.display = mode === "cpu" ? "block" : "none";
+    els.chArea.style.display = mode === "challenge" ? "block" : "none";
+    if (mode === "player") {
+      els.subtitle.textContent = `Я загадал число от ${state.min} до ${state.max}`;
+      newGame();
+    } else if (mode === "cpu") {
+      stopTimer();
+      els.subtitle.textContent = "Теперь угадываю я — а вы загадайте число!";
+      cpuNewGame();
+    } else {
+      stopTimer();
+      els.subtitle.textContent = "Загадайте число другу или примите его вызов 🔗";
+      showChallengeCreate();
+    }
+  }
+
+  /* ---------- Переключение режимов ---------- */
+  els.modes.addEventListener("click", (e) => {
+    const btn = e.target.closest(".mode-btn");
+    if (!btn) return;
+    sounds.click();
+    activateMode(btn.dataset.mode);
+  });
+
+  // Пауза таймера, когда вкладка скрыта (чтобы не «терять» время в фоне)
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopTimer();
+    else if (!state.over && els.playerArea.style.display !== "none") startTimer();
+  });
+
+  /* ---------- Старт: если открыли по ссылке-вызову — сразу играем ---------- */
+  function init() {
+    const hash = location.hash || "";
+    if (hash.startsWith("#c=")) {
+      try {
+        const data = decodeChallenge(hash.slice(3));
+        if (data && Number.isInteger(data.n)) {
+          activateMode("challenge");
+          startChallengePlay(data);
+          return;
+        }
+      } catch (e) { /* битая ссылка — просто откроем обычный режим */ }
+    }
+    newGame();
+  }
+  init();
+</script>
+</body>
+</html>
