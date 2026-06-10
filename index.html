@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#fbbf24">
+<meta name="description" content="Угадай число - увлекательная игра на логику. Соревнись с друзьями, получай IQ баллы!">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='70' font-size='80' text-anchor='middle'>🎯</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%236366f1' width='180' height='180' rx='40'/><text x='90' y='120' font-size='120' text-anchor='middle'>🎯</text></svg>">
 <title>Угадай число</title>
 <style>
   :root {
@@ -472,7 +477,11 @@
   const SOUND_KEY = "guessNumberSound";
   const THEME_KEY = "guessNumberTheme";
   const NAME_KEY = "guessNumberName";
-  const MAX_LB = 5; // сколько мест в таблице на уровень
+  const IQ_KEY = "guessNumberIQ";
+  const ACHIEVEMENTS_KEY = "guessNumberAchievements";
+  const DAILY_QUEST_KEY = "guessNumberDailyQuest";
+  const STATS_KEY = "guessNumberStats";
+  const MAX_LB = 5;
 
   const $ = (id) => document.getElementById(id);
   const els = {
@@ -802,6 +811,13 @@
   function win() {
     const seconds = elapsedSeconds();
     state.wins++; els.wins.textContent = state.wins;
+    updateStats("wins");
+
+    // Расчет IQ
+    const iq = calculateIQ(state.attempts, seconds, state.maxAttempts, state.max);
+    const bestIQ = saveIQ(iq);
+    const iqLabel = getIQLabel(iq);
+    const iqMsg = `\n🧠 Твой IQ: ${iq} баллов (${iqLabel.label})`;
 
     const records = loadRecords();
     const best = records[state.levelName];
@@ -816,7 +832,12 @@
     if (pos === 1) lbMsg = " 🥇 1-е место!";
     else if (pos) lbMsg = ` — ${pos}-е место в топе!`;
 
-    endGame(`🎉 Угадал за ${state.attempts} (${seconds}с)!${recordMsg}${lbMsg}`, "win");
+    // Проверка ачивок
+    let achMsg = "";
+    if (state.attempts === 1) { if (unlockAchievement("one_try")) achMsg += "\n🎯 АЧИВКА: Снайпер!"; }
+    if (iq >= 95) { if (unlockAchievement("iq_genius")) achMsg += "\n🧠 АЧИВКА: Гений!"; }
+
+    endGame(`🎉 Угадал за ${state.attempts} (${seconds}с)!${recordMsg}${lbMsg}${iqMsg}${achMsg}`, "win");
     updateRecordLabel(); confetti(); sounds.win();
   }
 
@@ -1068,6 +1089,95 @@
     newGame();
   });
 
+  /* ========== IQ СИСТЕМА: расчет интеллекта на основе результата ========== */
+  function calculateIQ(attempts, seconds, maxAttempts, difficulty) {
+    let baseIQ = 50;
+    const difficultyBonus = { 50: 5, 100: 15, 1000: 30, 10000: 45 }[difficulty] || 10;
+    const speedBonus = Math.max(0, Math.floor((maxAttempts - attempts) * 3));
+    const timeBonus = seconds < 30 ? Math.floor((30 - seconds) / 3) : 0;
+    let finalIQ = baseIQ + difficultyBonus + speedBonus + timeBonus;
+    return Math.min(120, Math.max(30, finalIQ));
+  }
+  function getIQLabel(iq) {
+    if (iq >= 115) return { label: "Суперчеловек 🤖", color: "#ff00ff" };
+    if (iq >= 105) return { label: "Маск уровня 👑", color: "#fbbf24" };
+    if (iq >= 95) return { label: "Гений 🧠", color: "#34d399" };
+    if (iq >= 85) return { label: "Очень умный 🤓", color: "#60a5fa" };
+    if (iq >= 70) return { label: "Выше среднего 📈", color: "#a78bfa" };
+    if (iq >= 50) return { label: "Обычный 👤", color: "#94a3b8" };
+    return { label: "Ленивый мозг 🐌", color: "#ef4444" };
+  }
+  function saveIQ(iq) {
+    const iqData = JSON.parse(localStorage.getItem(IQ_KEY)) || { scores: [], bestIQ: 0, avgIQ: 0 };
+    iqData.scores.push(iq);
+    iqData.bestIQ = Math.max(iqData.bestIQ, iq);
+    iqData.avgIQ = Math.floor(iqData.scores.reduce((a, b) => a + b, 0) / iqData.scores.length);
+    localStorage.setItem(IQ_KEY, JSON.stringify(iqData));
+    return iqData.bestIQ;
+  }
+
+  /* ========== АЧИВКИ СИСТЕМА ========== */
+  const ACHIEVEMENTS = {
+    speedrun_5: { name: "Молния", desc: "Угадай за 5 сек", icon: "⚡", check: (a, s) => s < 5 },
+    speedrun_1: { name: "Блиц", desc: "Угадай за 1 сек", icon: "💨", check: (a, s) => s < 1 },
+    one_try: { name: "Снайпер", desc: "Угадай с 1-й попытки", icon: "🎯", check: (a, s) => a === 1 },
+    ten_wins: { name: "Чемпион", desc: "10 побед подряд", icon: "👑", check: (w) => w >= 10 },
+    iq_genius: { name: "Гений", desc: "IQ >= 95", icon: "🧠", check: (iq) => iq >= 95 },
+    iq_superb: { name: "Сверхчеловек", desc: "IQ >= 115", icon: "🤖", check: (iq) => iq >= 115 },
+    hundred_games: { name: "Мастер", desc: "100 игр сыграно", icon: "💯", check: (g) => g >= 100 },
+    thousand_games: { name: "Легенда", desc: "1000 игр сыграно", icon: "⭐", check: (g) => g >= 1000 },
+    invite_friend: { name: "Социалист", desc: "Пригласи друга", icon: "🤝", check: (i) => i >= 1 },
+    beat_friend: { name: "Сокрушитель", desc: "Выиграй батлу", icon: "⚔️", check: (b) => b >= 1 },
+  };
+  function loadAchievements() {
+    return JSON.parse(localStorage.getItem(ACHIEVEMENTS_KEY)) || {};
+  }
+  function unlockAchievement(achId) {
+    const unlocked = loadAchievements();
+    if (!unlocked[achId]) {
+      unlocked[achId] = { unlockedAt: new Date().toISOString() };
+      localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(unlocked));
+      return true;
+    }
+    return false;
+  }
+
+  /* ========== ЕЖЕДНЕВНЫЙ КВЕСТ ========== */
+  function getDailyQuest() {
+    const today = new Date().toDateString();
+    const quest = JSON.parse(localStorage.getItem(DAILY_QUEST_KEY)) || { date: null, completed: false };
+    if (quest.date !== today) {
+      const quests = [
+        { desc: "Угадай число за < 5 попыток", reward: 50 },
+        { desc: "Угадай 3 раза подряд за 1-й раз", reward: 50 },
+        { desc: "Получи IQ > 90", reward: 50 },
+        { desc: "Сыграй 5 игр", reward: 30 },
+        { desc: "Выигра батлу", reward: 60 },
+      ];
+      const newQuest = quests[Math.floor(Math.random() * quests.length)];
+      return { date: today, ...newQuest, completed: false };
+    }
+    return quest;
+  }
+  function completeDailyQuest() {
+    const quest = getDailyQuest();
+    quest.completed = true;
+    localStorage.setItem(DAILY_QUEST_KEY, JSON.stringify(quest));
+  }
+
+  /* ========== СТАТИСТИКА ========== */
+  function getStats() {
+    const stats = JSON.parse(localStorage.getItem(STATS_KEY)) || {
+      totalGames: 0, wins: 0, losses: 0, totalInvites: 0, battlesWon: 0
+    };
+    return stats;
+  }
+  function updateStats(field) {
+    const stats = getStats();
+    stats[field] = (stats[field] || 0) + 1;
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+  }
+
   /* ---------- Старт: если открыли по ссылке-вызову — сразу играем ---------- */
   function init() {
     const hash = location.hash || "";
@@ -1084,6 +1194,11 @@
     newGame();
   }
   init();
+
+  // PWA: Регистрация Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  }
 </script>
 </body>
 </html>
