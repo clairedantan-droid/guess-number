@@ -254,6 +254,39 @@
   .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
   .modal-actions .btn { flex: 1; }
   .btn-secondary { background: rgba(255,255,255,0.15); color: var(--text); box-shadow: none; }
+
+  /* Выбор типа режима игры */
+  .game-mode-selector { margin-bottom: 18px; }
+  .game-modes { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .game-mode-btn {
+    flex: 1; min-width: 70px; padding: 8px 6px;
+    border: 1px solid var(--card-border); border-radius: 10px;
+    background: rgba(255,255,255,0.08); color: var(--text);
+    font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+  }
+  .game-mode-btn:hover { background: rgba(255,255,255,0.15); }
+  .game-mode-btn.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+  /* Пользовательская конфигурация */
+  .custom-config { padding: 16px; background: rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 16px; }
+  .custom-config > label { display: block; font-size: 0.9rem; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
+  .slider-group { margin-bottom: 14px; }
+  .slider-group label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+  .config-slider {
+    width: 100%; height: 6px; border-radius: 4px;
+    background: rgba(255,255,255,0.15); outline: none; cursor: pointer;
+    -webkit-appearance: none;
+  }
+  .config-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .config-slider::-moz-range-thumb {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .slider-value { display: inline-block; float: right; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -280,10 +313,67 @@
         <input type="text" id="playerName" maxlength="16" placeholder="Ваше имя">
       </div>
 
-      <div class="levels" id="levels">
+      <!-- Выбор типа игры: Стандарт / Попытки / Время / Смешанный -->
+      <div class="game-mode-selector" id="gameModeSelector">
+        <div class="game-modes">
+          <button class="game-mode-btn active" data-game-mode="classic">⭐ Стандарт</button>
+          <button class="game-mode-btn" data-game-mode="attempts">🎯 Попытки</button>
+          <button class="game-mode-btn" data-game-mode="time">⏱️ Время</button>
+          <button class="game-mode-btn" data-game-mode="mixed">🔀 Микс</button>
+        </div>
+      </div>
+
+      <!-- Стандартные уровни -->
+      <div id="classicLevelContainer">
+        <div class="levels" id="levels">
         <button class="level-btn" data-min="1" data-max="50" data-attempts="10" data-time="40" data-name="Лёгкий">Лёгкий<small>1–50 · 40с</small></button>
         <button class="level-btn active" data-min="1" data-max="100" data-attempts="7" data-time="30" data-name="Средний">Средний<small>1–100 · 30с</small></button>
         <button class="level-btn" data-min="1" data-max="1000" data-attempts="10" data-time="25" data-name="Сложный">Сложный<small>1–1000 · 25с</small></button>
+      </div>
+      </div>
+
+      <!-- Режим "Только попытки" -->
+      <div id="attemptsContainer" style="display: none;">
+        <div class="custom-config">
+          <label>📊 Число от 1 до 100</label>
+          <div class="slider-group">
+            <label for="attemptsSlider">Попытки:</label>
+            <input type="range" min="3" max="20" value="7" id="attemptsSlider" class="config-slider">
+            <span id="attemptsDisplay" class="slider-value">7</span>
+          </div>
+          <button class="btn" id="startAttemptsMode" style="width: 100%; margin-top: 12px;">🎮 Начать</button>
+        </div>
+      </div>
+
+      <!-- Режим "Только время" -->
+      <div id="timeContainer" style="display: none;">
+        <div class="custom-config">
+          <label>📊 Число от 1 до 100</label>
+          <div class="slider-group">
+            <label for="timeSlider">Время (секунды):</label>
+            <input type="range" min="10" max="120" value="30" step="5" id="timeSlider" class="config-slider">
+            <span id="timeDisplay" class="slider-value">30с</span>
+          </div>
+          <button class="btn" id="startTimeMode" style="width: 100%; margin-top: 12px;">🎮 Начать</button>
+        </div>
+      </div>
+
+      <!-- Режим "Смешанный" -->
+      <div id="mixedContainer" style="display: none;">
+        <div class="custom-config">
+          <label>📊 Число от 1 до 100</label>
+          <div class="slider-group">
+            <label for="mixedAttemptsSlider">Попытки:</label>
+            <input type="range" min="3" max="20" value="7" id="mixedAttemptsSlider" class="config-slider">
+            <span id="mixedAttemptsDisplay" class="slider-value">7</span>
+          </div>
+          <div class="slider-group">
+            <label for="mixedTimeSlider">Время (секунды):</label>
+            <input type="range" min="10" max="120" value="30" step="5" id="mixedTimeSlider" class="config-slider">
+            <span id="mixedTimeDisplay" class="slider-value">30с</span>
+          </div>
+          <button class="btn" id="startMixedMode" style="width: 100%; margin-top: 12px;">🎮 Начать</button>
+        </div>
       </div>
 
       <div class="timer-wrap">
@@ -914,6 +1004,68 @@
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) stopTimer();
     else if (!state.over && els.playerArea.style.display !== "none") startTimer();
+  });
+
+  /* ---------- Новые режимы: Попытки / Время / Смешанный ---------- */
+  let currentGameMode = "classic";
+
+  // Обработчик переключения типов игры
+  document.querySelectorAll(".game-mode-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      currentGameMode = btn.dataset.gameMode;
+      document.querySelectorAll(".game-mode-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      document.getElementById("classicLevelContainer").style.display = currentGameMode === "classic" ? "block" : "none";
+      document.getElementById("attemptsContainer").style.display = currentGameMode === "attempts" ? "block" : "none";
+      document.getElementById("timeContainer").style.display = currentGameMode === "time" ? "block" : "none";
+      document.getElementById("mixedContainer").style.display = currentGameMode === "mixed" ? "block" : "none";
+
+      if (currentGameMode === "classic") newGame();
+      sounds.click();
+    });
+  });
+
+  // Слайдер попыток
+  $("attemptsSlider").addEventListener("input", (e) => {
+    $("attemptsDisplay").textContent = e.target.value;
+  });
+  $("startAttemptsMode").addEventListener("click", () => {
+    state.min = 1; state.max = 100;
+    state.maxAttempts = parseInt($("attemptsSlider").value);
+    state.timeLimit = 999999; // без лимита времени
+    state.levelName = `Попытки ${state.maxAttempts}`;
+    sounds.click();
+    newGame();
+  });
+
+  // Слайдер времени
+  $("timeSlider").addEventListener("input", (e) => {
+    $("timeDisplay").textContent = e.target.value + "с";
+  });
+  $("startTimeMode").addEventListener("click", () => {
+    state.min = 1; state.max = 100;
+    state.maxAttempts = 999999; // без лимита попыток
+    state.timeLimit = parseInt($("timeSlider").value);
+    state.levelName = `Время ${state.timeLimit}с`;
+    sounds.click();
+    newGame();
+  });
+
+  // Слайдеры смешанного режима
+  $("mixedAttemptsSlider").addEventListener("input", (e) => {
+    $("mixedAttemptsDisplay").textContent = e.target.value;
+  });
+  $("mixedTimeSlider").addEventListener("input", (e) => {
+    $("mixedTimeDisplay").textContent = e.target.value + "с";
+  });
+  $("startMixedMode").addEventListener("click", () => {
+    state.min = 1; state.max = 100;
+    state.maxAttempts = parseInt($("mixedAttemptsSlider").value);
+    state.timeLimit = parseInt($("mixedTimeSlider").value);
+    state.levelName = `Микс ${state.maxAttempts}/${state.timeLimit}с`;
+    sounds.click();
+    newGame();
   });
 
   /* ---------- Старт: если открыли по ссылке-вызову — сразу играем ---------- */
